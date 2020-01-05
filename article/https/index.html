@@ -224,9 +224,13 @@
 <h2 id="改进的方法">改进的方法</h2>
 <h3 id="对称加密">对称加密</h3>
 <p>如果通信双方都各自持有同一个密钥，且没有别人知道，这两方的通信安全当然是可以被保证的（除非密钥被破解）。<br>
-<img src="source%5Cimg%5Carticle%5Chttps%5C%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86.PNG" alt="Theme HuWeihuang"><br>
+<img src="/img/article/https/duichenjiami.png" alt="duichenjiami"><br>
 问题：这个密钥怎么让传输的双方知晓，同时不被别人知道。<br>
 方案：如果浏览器内部就预存了网站A的密钥，且可以确保除了浏览器和网站A，不会有任何外人知道该密钥，那理论上用对称加密是可以的，这样浏览器只要预存好世界上所有HTTPS网站的密钥就行啦！</p>
+<p>###非对称加密<br>
+有两把密钥，公钥加密(pk)，私钥解密(sk)<br>
+<img src="/img/article/https/feiduichenjiami.png" alt="duichenjiami"><br>
+对称密钥的局限性:非对称加密算法非常耗时</p>
 <p>Please <a class="github-button" href="https://github.com/huweihuang/hexo-theme-huweihuang" data-icon="octicon-star" aria-label="Star huweihuang/hexo-theme-huweihuang on GitHub" target="_blank" rel="noopener">Star</a> this Project if you like it! <a class="github-button" href="https://github.com/huweihuang" aria-label="Follow @huweihuang on GitHub" target="_blank" rel="noopener">Follow</a> would also be appreciated!<br>
 Peace!</p>
 
