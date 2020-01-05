@@ -233,15 +233,15 @@
 对称密钥的局限性:非对称加密算法非常耗时</p>
 <h3 id="对称加密非对称加密">对称加密+非对称加密</h3>
 <p>使用非对称加密来交换对称加密密钥<br>
-<img src="/img/article/https/jiehe.png" alt="jiehe"><br>
+<img src="/img/article/https/jiehe.PNG" alt="jiehe"><br>
 存在中间人攻击<br>
-<img src="/img/article/https/MITM.png" alt="MITM"></p>
+<img src="/img/article/https/MITM.PNG" alt="MITM"></p>
 <h3 id="对称加密非对称加密ca">对称加密+非对称加密+CA</h3>
 <p>网站在使用HTTPS前，需要向“CA机构”申请颁发一份数字证书，数字证书里有证书持有者、证书持有者的公钥等信息，服务器把证书传输给浏览器，浏览器从证书里取公钥就行了<br>
 <img src="/img/article/https/CA.PNG" alt="CA"></p>
 <h3 id="数字证书">数字证书</h3>
 <p>签名与验签<br>
-<img src="/img/article/https/sign.png" alt="sign"></p>
+<img src="/img/article/https/sign.PNG" alt="sign"></p>
 <h2 id="怎么验证证书">怎么验证证书</h2>
 <h3 id="验证证书是否在有效期内">验证证书是否在有效期内</h3>
 <p>证书中会包含证书的有效期的起始时间和结束时间，取一个时间点去比较就好了。 关键问题是如何保证取到的时间点是可信的，这就是另外一个话题了。</p>
@@ -256,7 +256,7 @@ OCSP是在线证书状态检查协议。应用按照标准发送一个请求，�
 <p>信任连:每一张证书都是由上级CA证书签发的，上级CA证书可能还有上级，最后找到根证书。根证书为自签名证书，即自己签自己。<br><br>
 当你验证一张证书是否由上级CA证书签发的时候，你必须有这个上级CA证书，通常这张证书会内置在浏览器或者OS中。</p>
 <p>IE和Chrome是通过内置在Windows系统中的TrustStore来管理根证书（当然自己也可以手动导入自签证书，浏览不会认可的因为有OCSP和CRL）；而Firefox则是内置在自己的浏览中。<br>
-<img src="/img/article/https/certificate.png" alt="certificate"></p>
+<img src="/img/article/https/certificate.PNG" alt="certificate"></p>
 <h2 id="https必须在每次请求中都要先在ssltls层进行握手传输密钥吗">HTTPS必须在每次请求中都要先在SSL/TLS层进行握手传输密钥吗？</h2>
 <p>根据sessionID存储密钥</p>
 <h2 id="如果想攻击https可以分别从这三个阶段入手">如果想攻击https，可以分别从这三个阶段入手。</h2>
