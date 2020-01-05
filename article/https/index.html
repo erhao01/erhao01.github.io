@@ -256,7 +256,7 @@ OCSP是在线证书状态检查协议。应用按照标准发送一个请求，�
 <p>信任连:每一张证书都是由上级CA证书签发的，上级CA证书可能还有上级，最后找到根证书。根证书为自签名证书，即自己签自己。<br><br>
 当你验证一张证书是否由上级CA证书签发的时候，你必须有这个上级CA证书，通常这张证书会内置在浏览器或者OS中。</p>
 <p>IE和Chrome是通过内置在Windows系统中的TrustStore来管理根证书（当然自己也可以手动导入自签证书，浏览不会认可的因为有OCSP和CRL）；而Firefox则是内置在自己的浏览中。<br>
-<img src="/img/article/https/certificate.png" alt="sign"></p>
+<img src="/img/article/https/certificate.png" alt="certificate"></p>
 <h2 id="https必须在每次请求中都要先在ssltls层进行握手传输密钥吗">HTTPS必须在每次请求中都要先在SSL/TLS层进行握手传输密钥吗？</h2>
 <p>根据sessionID存储密钥</p>
 <h2 id="如果想攻击https可以分别从这三个阶段入手">如果想攻击https，可以分别从这三个阶段入手。</h2>
